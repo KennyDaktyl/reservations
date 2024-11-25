@@ -1,0 +1,24 @@
+version: "3.8"
+
+services:
+  flask-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: flask-room-service
+    ports:
+      - "5005:5005"
+    volumes:
+      - ./app:/app  
+      - ./app/config:/app/config 
+      - ./migrations:/app/migrations
+    env_file:
+      - .env
+    command: sh -c "flask db upgrade && flask run --host=0.0.0.0 --port=5005"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    external: true
+

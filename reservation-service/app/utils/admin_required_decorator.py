@@ -1,0 +1,21 @@
+import json
+from functools import wraps
+
+from flask import Response
+from flask_jwt_extended import get_jwt, jwt_required
+
+
+def admin_required(fn):
+    @wraps(fn)
+    @jwt_required()
+    def wrapper(*args, **kwargs):
+        claims = get_jwt()
+        if claims.get("role") != "admin":
+            return Response(
+                json.dumps({"message": "Admins only!"}),
+                status=403,
+                mimetype="application/json",
+            )
+        return fn(*args, **kwargs)
+
+    return wrapper
