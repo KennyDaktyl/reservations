@@ -16,7 +16,7 @@ class DevelopmentConfig(Config):
     """Development configuration"""
 
     SQLALCHEMY_DATABASE_URI = os.getenv(
-        "SQLALCHEMY_DATABASE_URI",
+        "DATABASE_URL",
         "postgresql://postgres_user:postgres_pass@postgres-service:5433/main_db",
     )  # type: ignore
 
