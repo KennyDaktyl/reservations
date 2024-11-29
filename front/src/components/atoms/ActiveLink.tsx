@@ -29,8 +29,8 @@ export const ActiveLink = ({ href, role, children, exact = false, className }: A
 			role={role}
 			className={clsx(
 				className,
-				!isActive && "font-small text-md sm:text-md lg:text-md text-gray-500 hover:text-gray-900",
-				isActive && "text-gray-900",
+				!isActive && "font-small text-md sm:text-md lg:text-md text-gray-500 hover:text-dark-500",
+				isActive && "text-dark-500 font-bold hover:text-dark-500",
 			)}
 			aria-current={isActive ? "page" : undefined}
 		>

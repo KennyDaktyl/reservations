@@ -1,6 +1,6 @@
-import jwt from "jsonwebtoken";
+import jwt, { decode } from "jsonwebtoken";
 import { jwtVerify } from "jose";
-import { cookies } from "next/headers";
+import { cookies } from "next/headers";``
 
 const secret = process.env.AUTH_SECRET || "default_secret_key";
 const key = new TextEncoder().encode(secret); // Dodajemy deklarację `key`
@@ -99,3 +99,24 @@ export async function getUserRoleFromToken(): Promise<"guest" | "user" | "admin"
     }
 }
 
+/**
+ * Pobiera i rozkodowuje token JWT, zwraca pole `accessToken`.
+ * @param jwtToken - Token JWT do rozkodowania.
+ * @returns Wartość pola `accessToken` lub null, jeśli token jest nieprawidłowy.
+ */
+export const decodeAccessToken = (jwtToken: string): string | null => {
+    if (!jwtToken) {
+        console.warn("Token jest pusty.");
+        return null;
+    }
+
+    // Rozkodowanie tokena bez weryfikacji podpisu
+    const decoded = decode(jwtToken) as { accessToken?: string };
+
+    if (!decoded || !decoded.accessToken) {
+        console.warn("Nie znaleziono pola accessToken w tokenie.");
+        return null;
+    }
+
+    return decoded.accessToken;
+};

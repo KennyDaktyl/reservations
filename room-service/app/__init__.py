@@ -52,7 +52,7 @@ def create_app(config_type="development"):
             or request.path.startswith("/swaggerui/")
             or request.path.startswith("/api/rooms/docs")
             or request.path.startswith("/api/equipments/docs")
-            or request.path.startswith("/api/room_equipments/docs/")
+            or request.path.startswith("/api/room_equipments/docs")
             or request.path.startswith("/api/rooms/swagger.json")
             or request.path.startswith("/api/equipments/swagger.json")
             or request.path.startswith("/api/room_equipments/swagger.json")

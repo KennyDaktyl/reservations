@@ -4,7 +4,7 @@ from flask_restx import Api, Resource, fields
 from marshmallow import ValidationError
 
 from app.repositories.room_repository import RoomRepository
-from app.schemas.room_schemas import RoomSchema
+from app.schemas.room_schemas import RoomRequestSchema, RoomSchema
 from app.utils.admin_required_decorator import admin_required
 
 room_bp = Blueprint("rooms", __name__)
@@ -29,6 +29,7 @@ room_model = api.model(
     {
         "name": fields.String(required=True, description="Name of the room"),
         "capacity": fields.Integer(required=True, description="Room capacity"),
+        "equipments": fields.List(fields.Integer, description="List of equipment IDs"),
     },
 )
 
@@ -40,14 +41,15 @@ class RoomCreate(Resource):
     @api.expect(room_model)
     def post(self):
         """Create a new room"""
-        schema = RoomSchema()
+        schema = RoomRequestSchema()
         try:
             data = schema.load(request.json)
         except ValidationError as err:
             return {"errors": err.messages}, 400
 
         room = RoomRepository.create(data)
-        return schema.dump(room), 201
+        room_schema = RoomSchema()
+        return room_schema.dump(room), 201
 
 
 @api.route("/list_rooms", methods=["GET"])
@@ -72,7 +74,7 @@ class RoomDetail(Resource):
     @api.expect(room_model)
     def put(self, id):
         """Update a room"""
-        schema = RoomSchema(partial=True)
+        schema = RoomRequestSchema(partial=True)
         try:
             data = schema.load(request.json)
         except ValidationError as err:
