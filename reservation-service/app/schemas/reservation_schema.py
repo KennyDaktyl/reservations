@@ -22,6 +22,7 @@ class ReservationSchema(Schema):
         start_date = data.get("start_date")
         end_date = data.get("end_date")
         room_id = data.get("room_id")
+        room_name = data.get("room_data", {}).get("name")
 
         if start_date >= end_date:
             raise ValidationError({"start_date": "Start date must be before end date."})
@@ -31,7 +32,7 @@ class ReservationSchema(Schema):
             if reservation.overlaps(start_date, end_date):
                 raise ValidationError(
                     {
-                        "room_id": f"Room {room_id} is not available from {start_date} to {end_date}."
+                        "room_id": f"Room {room_name} is not available from {start_date} to {end_date}."
                     }
                 )
 

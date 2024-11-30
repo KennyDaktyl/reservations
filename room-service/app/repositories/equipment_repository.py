@@ -6,7 +6,7 @@ class EquipmentRepository:
     @staticmethod
     def get_all():
         """Retrieve all equipment"""
-        return Equipment.query.all()
+        return Equipment.query.order_by(Equipment.name.asc()).all()
 
     @staticmethod
     def get_by_id(id):

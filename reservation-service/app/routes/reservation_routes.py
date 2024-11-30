@@ -51,7 +51,8 @@ reservation_model = api.model(
 
 @reservation_ns.route("/list_reservations", methods=["GET"])
 class ReservationList(Resource):
-    @admin_required
+
+    @jwt_required()
     @reservation_ns.doc("list_reservations")
     def get(self):
         is_active = request.args.get("is_active")
@@ -59,6 +60,8 @@ class ReservationList(Resource):
         sort_order = request.args.get("sort_order", "asc")
         user_id = request.args.get("user_id", type=int)
         room_id = request.args.get("room_id", type=int)
+        date_start = request.args.get("date_start") 
+        date_end = request.args.get("date_end")   
 
         if is_active is not None:
             is_active = is_active.lower() == "true"
@@ -69,10 +72,13 @@ class ReservationList(Resource):
             sort_order=sort_order,
             user_id=user_id,
             room_id=room_id,
+            date_start=date_start,
+            date_end=date_end,
         )
 
         schema = ReservationRespnoseSchema(many=True)
         return schema.dump(reservations), 200
+
 
 
 @reservation_ns.route("/create_reservation", methods=["POST"])
@@ -83,11 +89,22 @@ class ReservationCreate(Resource):
     @jwt_required()
     def post(self):
         try:
+            user_data = request.json.get("user_data")
+            room_data = request.json.get("room_data")
+
+            if not user_data or not room_data:
+                return {"message": "user_data and room_data are required."}, 400
+
             validated_data = self._validate_reservation_data(request.json)
             self._validate_dates(validated_data)
 
-            if not self._is_room_available(validated_data):
-                return self._room_unavailable_response(validated_data)
+            if not self._is_room_available(validated_data)["available"]:
+                conflicts = self._is_room_available(validated_data)["conflicts"]
+                return {
+                    "message": "Pokój jest już zarezerwowany w podanym terminie.",
+                    "details": conflicts,
+                }, 400
+
 
             reservation = self._create_reservation(validated_data)
             self._send_reservation_notification(reservation)
@@ -119,14 +136,14 @@ class ReservationCreate(Resource):
                 raise ValueError(f"Invalid {field_name} format. Use YYYY-MM-DDTHH:MM:SS")
 
     def _is_room_available(self, data):
-        room_id = data["room_id"]
-        start_date = data["start_date"]
-        end_date = data["end_date"]
-        return ReservationRepository.check_room_availability(room_id, start_date, end_date)
+        availability = ReservationRepository.check_room_availability(
+            data["room_id"], data["start_date"], data["end_date"]
+        )
+        return availability
 
     def _room_unavailable_response(self, data):
-        room_id = data["room_id"]
-        return {"message": f"Room {room_id} is already reserved in the specified date range."}, 400
+        room_name = data["room"]["name"]
+        return {"message": f"Room {room_name} is already reserved in the specified date range."}, 400
 
     def _create_reservation(self, data):
         return ReservationRepository.create(data)

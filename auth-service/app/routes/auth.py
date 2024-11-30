@@ -1,4 +1,5 @@
 from flask import Blueprint, request
+from flask_jwt_extended import get_jwt_identity, jwt_required
 from flask_restx import Api, Resource, fields
 from marshmallow import ValidationError
 
@@ -113,3 +114,28 @@ class CreateUser(Resource):
             "role": new_user.role,
         }
         return response_data, 201
+
+
+@api.route("/get_user")
+class GetUser(Resource):
+    @api.doc(description="Retrieve user details from the JWT token.")
+    @api.response(200, "Success", user_response_model)
+    @api.response(404, "User not found")
+    @api.response(401, "Unauthorized")
+    @jwt_required()
+    def get(self):
+        """Retrieve user details from the JWT token"""
+        id = get_jwt_identity()
+        if not id:
+            return {"message": "Unauthorized. Token is invalid or missing."}, 401
+
+        user = UserRepository.get_by_id(id)
+        if not user:
+            return {"message": "User not found."}, 404
+
+        response_data = {
+            "id": user.id,
+            "email": user.email,
+            "role": user.role,
+        }
+        return response_data, 200

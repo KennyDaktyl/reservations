@@ -9,6 +9,22 @@ class RoomRepository:
     @staticmethod
     def get_all():
         return Room.query.all()
+    
+    @staticmethod
+    def get_filtered(min_capacity=None, max_capacity=None, equipment_ids=None):
+        query = Room.query
+
+        if min_capacity is not None:
+            query = query.filter(Room.capacity >= min_capacity)
+        if max_capacity is not None:
+            query = query.filter(Room.capacity <= max_capacity)
+
+        if equipment_ids:
+            query = query.filter(Room.equipments.any(Equipment.id.in_(equipment_ids)))
+
+        query = query.order_by(Room.name.asc())
+
+        return query.all()
 
     @staticmethod
     def get_by_id(id):

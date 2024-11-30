@@ -56,8 +56,20 @@ class RoomCreate(Resource):
 class RoomList(Resource):
     
     def get(self):
-        """Get all rooms"""
-        rooms = RoomRepository.get_all()
+        """Get rooms with optional filters"""
+        min_capacity = request.args.get("minCapacity", type=int)
+        max_capacity = request.args.get("maxCapacity", type=int)
+
+        equipment_ids = request.args.get("equipmentIds")
+        if equipment_ids:
+            equipment_ids = list(map(int, equipment_ids.split(",")))
+
+
+        rooms = RoomRepository.get_filtered(
+            min_capacity=min_capacity, 
+            max_capacity=max_capacity, 
+            equipment_ids=equipment_ids
+        )
         schema = RoomSchema(many=True)
         return schema.dump(rooms), 200
 

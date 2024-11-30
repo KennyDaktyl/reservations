@@ -10,7 +10,7 @@ class ReservationRepository:
 
     @staticmethod
     def get_filtered(
-        is_active=None, sort_by=None, sort_order="asc", user_id=None, room_id=None
+        is_active=None, sort_by=None, sort_order="asc", user_id=None, room_id=None, date_start=None, date_end=None
     ):
         query = db.session.query(Reservation)
 
@@ -26,6 +26,11 @@ class ReservationRepository:
         if room_id is not None:
             query = query.filter(Reservation.room_id == room_id)
 
+        if date_start:
+            query = query.filter(Reservation.start_date >= date_start)
+        if date_end:
+            query = query.filter(Reservation.end_date <= date_end)
+
         if sort_by:
             sort_column = getattr(Reservation, sort_by, None)
             if sort_column:
@@ -36,18 +41,33 @@ class ReservationRepository:
 
         return query.all()
 
+
     @staticmethod
     def check_room_availability(room_id, start_date, end_date):
         overlapping_reservations = (
             db.session.query(Reservation)
             .filter(
                 Reservation.room_id == room_id,
-                (Reservation.start_date < end_date)
-                & (Reservation.end_date > start_date),
+                (Reservation.start_date < end_date) & (Reservation.end_date > start_date),
             )
             .all()
         )
-        return len(overlapping_reservations) == 0
+
+        if overlapping_reservations:
+            return {
+                "available": False,
+                "conflicts": [
+                    {
+                        "id": reservation.id,
+                        "start_date": reservation.start_date,
+                        "end_date": reservation.end_date,
+                    }
+                    for reservation in overlapping_reservations
+                ],
+            }
+
+        return {"available": True, "conflicts": []}
+
 
     @staticmethod
     def create(data):
