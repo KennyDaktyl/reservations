@@ -17,7 +17,7 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
     return { error: "Niepoprawne dane logowania.", details: validatedFields.error.errors };
   }
 
-  const url = `${process.env.AUTH_API_URL}/login`;
+  const url = `${process.env.NEXT_PUBLIC_AUTH_API_URL}/login`;
 
   try {
     const response = await axios.post<LoginResponse>(url, validatedFields.data, {

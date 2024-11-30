@@ -1,4 +1,5 @@
 import { getAccessToken } from "@/utils";
+import { redirect } from "next/navigation";
 
 export const fetchGetApiData = async <TResult, TVariables extends Record<string, unknown>>({
     url,
@@ -32,6 +33,11 @@ export const fetchGetApiData = async <TResult, TVariables extends Record<string,
         cache,
         ...(next && { next }),
     });
+
+    if (res.status === 401) {
+        redirect("/auth/login");
+        return { status: 401 }; 
+    }
 
     if (!res.ok) {
         return { status: res.status }; 

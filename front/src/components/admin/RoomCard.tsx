@@ -2,23 +2,21 @@
 
 import { Room } from "@/app/types";
 import { useState } from "react";
-import { handleDeleteRoomAction } from "@/app/admin/rooms/actions";
 import { X } from "lucide-react";
 
 interface RoomCardProps {
     room: Room;
-    onDelete: (id: number) => void;
+    onDelete?: (id: number) => void; 
 }
 
 export default function RoomCard({ room, onDelete }: RoomCardProps) {
     const [isDeleting, setIsDeleting] = useState(false);
 
     const handleDelete = async () => {
-        if (isDeleting) return; 
+        if (isDeleting || !onDelete) return;
         setIsDeleting(true);
         try {
-            await handleDeleteRoomAction(room.id);
-            onDelete(room.id); 
+            await onDelete(room.id);
         } catch (error) {
             console.error("Failed to delete room:", error);
         } finally {
@@ -27,17 +25,17 @@ export default function RoomCard({ room, onDelete }: RoomCardProps) {
     };
 
     return (
-        <div
-            className="relative p-4 bg-white shadow-md rounded-md hover:shadow-lg hover:ring-2 hover:ring-blue-400 transition"
-        >
-            <button
-                onClick={handleDelete}
-                disabled={isDeleting}
-                className="absolute top-2 right-2 text-red-500 hover:text-red-700"
-                aria-label="Usuń pokój"
-            >
-                <X size={18} />
-            </button>
+        <div className="relative p-4 bg-white shadow-md rounded-md hover:shadow-lg hover:ring-2 hover:ring-blue-400 transition">
+            {onDelete && (
+                <button
+                    onClick={handleDelete}
+                    disabled={isDeleting}
+                    className="absolute top-2 right-2 text-red-500 hover:text-red-700"
+                    aria-label="Usuń pokój"
+                >
+                    <X size={18} />
+                </button>
+            )}
 
             <h2 className="text-xl font-bold text-gray-800">{room.name}</h2>
             <p className="text-gray-600">Pojemność: {room.capacity}</p>

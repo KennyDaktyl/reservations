@@ -52,8 +52,8 @@ export default function NavBar() {
 
     return (
         <nav className="fixed top-0 z-50 w-full bg-white shadow-md">
-            <div className="mx-auto flex h-24 max-w-screen-xl items-center justify-between p-5">
-                <ul className="ml-4 flex h-24 items-center space-x-4">
+            <div className="mx-auto flex h-24 max-w-screen-xl items-center justify-between py-5">
+                <ul className="flex h-24 items-center space-x-4">
                     {filteredLinks.map((link) => (
                         <li key={link.href}>
                             <ActiveLink role="link" href={link.href} exact={link.exact}>

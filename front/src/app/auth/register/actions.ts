@@ -20,7 +20,7 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
 
   try {
     const response = await axios.post<ResponseData>(
-      `${process.env.AUTH_API_URL}/create_user`,
+      `${process.env.NEXT_PUBLIC_AUTH_API_URL}/create_user`,
       userData,
       {
         headers: {

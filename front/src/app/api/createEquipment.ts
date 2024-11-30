@@ -13,7 +13,7 @@ export const createEquipment = async (equipmentData: EquipmentInput): Promise<Eq
         });
 
         return response;
-    } catch (error) {
+    } catch (error) { 
         console.error("Failed to create equipment:", error);
         return null; 
     }

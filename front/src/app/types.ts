@@ -44,3 +44,43 @@ export interface RoomInput extends Record<string, unknown> {
   capacity: number;
   equipments?: number[];
 }
+
+export interface Reservation {
+  id: number;
+  room_id: number;
+  user_id: number;
+  start_date: string;
+  end_date: string;   
+  created_date?: string;
+  updated_date?: string;
+  cancel_date?: string | null;
+  is_active: boolean; 
+  room_data?: {
+      id: number;
+      name: string;
+      capacity: number;
+  };
+  user_data?: {
+      id: number;
+      name: string;
+      email: string;
+  };
+}
+
+export interface UserData {
+  id: number;
+  email: string;
+  role: string;
+}
+
+export interface RoomOption {
+  value: number;
+  label: string;
+}
+
+export interface FormValues {
+  start_date: string;
+  end_date: string;
+  room_id?: number;
+  user_id?: number;
+}

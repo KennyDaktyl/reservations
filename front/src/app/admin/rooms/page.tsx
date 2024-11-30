@@ -1,5 +1,5 @@
 import { getEquipmentsList } from "@/app/api/getEquipments";
-import { getRoomsList } from "@/app/api/getRooms";
+import { getFilteredRooms } from "@/app/api/getRooms";
 import { Equipment, Room } from "@/app/types";
 import RoomsPageClient from "@/components/admin/RoomsPageClient";
 import { redirect } from "next/navigation";
@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 export default async function RoomsPage() {
 
-    const roomsResponse = await getRoomsList();
+    const roomsResponse = await getFilteredRooms({});
     const equipmentsResponse = await getEquipmentsList();
 
     if ("status" in roomsResponse && roomsResponse.status === 401) {
