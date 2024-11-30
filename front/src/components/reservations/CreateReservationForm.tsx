@@ -91,7 +91,7 @@ const CreateReservationForm = ({ rooms, user }: ReservationsPageClientProps) => 
     return (
         <form
             onSubmit={handleSubmit(onSubmit)}
-            className="flex flex-wrap gap-4 bg-gray-50 p-4 rounded-lg shadow-md items-start"
+            className="flex flex-wrap gap-4 bg-gray-50 p-4 rounded-lg shadow-md items-start z-50"
         >
             <div className="flex flex-col w-1/4">
                 <Label htmlFor="date_start" className="text-sm font-medium text-gray-700">
@@ -156,7 +156,7 @@ const CreateReservationForm = ({ rooms, user }: ReservationsPageClientProps) => 
                                 {...field}
                                 options={rooms}
                                 isSearchable
-                                className="react-select-container"
+                                className="react-select-container z-auto"
                                 classNamePrefix="react-select"
                                 onChange={(selected) => field.onChange(selected?.value ?? undefined)}
                                 value={rooms.find((room) => room.value === field.value) || null}

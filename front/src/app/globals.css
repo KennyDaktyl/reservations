@@ -64,3 +64,12 @@
     @apply bg-background text-foreground;
   }
 }
+
+.react-select-container {
+  position: relative; 
+}
+
+.react-select__menu {
+  position: absolute !important;
+  z-index: 9999;
+}

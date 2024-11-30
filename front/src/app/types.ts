@@ -55,16 +55,8 @@ export interface Reservation {
   updated_date?: string;
   cancel_date?: string | null;
   is_active: boolean; 
-  room_data?: {
-      id: number;
-      name: string;
-      capacity: number;
-  };
-  user_data?: {
-      id: number;
-      name: string;
-      email: string;
-  };
+  room_data?: Room;
+  user_data?: UserData
 }
 
 export interface UserData {
