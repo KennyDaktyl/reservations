@@ -21,12 +21,15 @@ import { FormError } from "../atoms/form-error";
 import { FormSuccess } from "../atoms/form-success";
 import { CardWrapper } from "./card-wrapper";
 import { z } from "zod";
+import { useSessionStore } from "@/store";
 
 export const LoginForm = () => {
   const router = useRouter();
   const [success, setSuccess] = useState<string | undefined>("");
   const [error, setError] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
+
+  const setRole = useSessionStore((state) => state.setRole);
 
   const form = useForm<z.infer<typeof LoginSchema>>({
     resolver: zodResolver(LoginSchema),
@@ -46,7 +49,9 @@ export const LoginForm = () => {
         console.error("Błąd logowania:", response.error);
         setError(response.error);
       } else {
-        console.log("Sukces logowania:", response.data);
+
+        const role = response.data?.role || "guest"; 
+        setRole(role); 
 
         await signIn("credentials", {
           username: values.email,
@@ -55,7 +60,6 @@ export const LoginForm = () => {
           role: response.data?.role,
           redirect: false,
         });
-
         setSuccess("Logowanie zakończone sukcesem!");
         router.push("/");
         form.reset();

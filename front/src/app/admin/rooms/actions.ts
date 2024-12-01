@@ -25,9 +25,7 @@ export const handleCreateRoomAction = async (data: { name: string; capacity: num
 
 export const handleDeleteRoomAction = async (id: number) => {
     try {
-        console.log("Deleting room with ID:", id);
         await deleteRoom(id);
-        console.log("Room deleted successfully.");
         revalidatePath("/admin/rooms");
         revalidateTag("rooms");
     } catch (error) {
@@ -62,11 +60,9 @@ export const handleRemoveEquipmentFromRoomAction = async (data: { roomId: number
         revalidateTag("rooms");
 
         if (response === null) {
-            console.log("Equipment successfully removed from room in API");
             return null; 
         }
 
-        console.log("Room updated after equipment removal:", response);
         return response;
     } catch (error) {
         console.error("Failed to remove equipment from room:", error);

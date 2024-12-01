@@ -59,7 +59,6 @@ const DroppableRoom = forwardRef<HTMLDivElement, DroppableRoomProps>(
                                 <button
                                     className="text-red-500 hover:text-red-700 transition"
                                     onClick={() => {
-                                        console.log(`Clicked to remove equipment ID: ${equipment.id}`);
                                         onRemoveEquipment(room.id, equipment.id);
                                     }}
                                     aria-label={`Remove ${equipment.name}`}

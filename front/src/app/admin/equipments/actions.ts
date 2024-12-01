@@ -22,12 +22,7 @@ export const handleCreateEquipmentAction = async (data: { name: string }) => {
 
 export const handleDeleteEquipmentAction = async (id: number) => {
     try {
-        console.log("Deleting equipment with ID:", id);
-
         await deleteEquipment(id);
-
-        console.log("Equipment deleted successfully.");
-
         revalidatePath("/admin/equipments");
         revalidateTag("equipments");
         revalidateTag("equipments");

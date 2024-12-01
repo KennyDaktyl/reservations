@@ -6,13 +6,15 @@ export const fetchPostApiData = async <TResult, TVariables extends Record<string
     method = "POST",
     next,
     cache = "default",
+    responseType = "json",
 }: {
     url: string;
     body: TVariables;
     method?: "POST" | "PUT" | "DELETE";
     next?: NextFetchRequestConfig;
     cache?: RequestCache;
-}): Promise<TResult | null> => {
+    responseType?: "json" | "blob" | "text";
+}): Promise<TResult> => {
     const headers: HeadersInit = {
         "Content-Type": "application/json",
     };
@@ -30,35 +32,22 @@ export const fetchPostApiData = async <TResult, TVariables extends Record<string
         ...(next && { next }),
         credentials: "include",
     });
-    
+
     if (res.status === 401) {
-        throw { status: 401, message: "Unauthorized - Redirecting to login" };
+        throw new Error("Unauthorized");
     }
 
     if (!res.ok) {
-        let errorData: any = {};
-    
-        try {
-            const text = await res.text();
-            if (text) {
-                errorData = JSON.parse(text); 
-            }
-        } catch (parseError) {
-            console.error("Error parsing response JSON:", parseError);
-        }
-        console.log("Error in fetchPostApiData:", errorData);
-    
-        throw {
-            status: res.status,
-            message: errorData.message || `Unexpected status code: ${res.status}`,
-            details: errorData.details || errorData.errors || null,
-        };
+        throw new Error("Request failed");
     }
 
-    if (res.status === 204) {
-        return null;
+    if (responseType === "blob") {
+        return (await res.blob()) as TResult;
     }
-    const data: TResult = (await res.json()) as TResult;
 
-    return data;
+    if (responseType === "text") {
+        return (await res.text()) as TResult;
+    }
+
+    return (await res.json()) as TResult;
 };

@@ -11,7 +11,6 @@ export const removeEquipmentFromRoom = async (roomId: number, equipmentId: numbe
             method: "DELETE",
         });
 
-        console.log("API response for removeEquipmentFromRoom:", response);
         return response;
     } catch (error) {
         console.error("Failed to remove equipment from room:", error);

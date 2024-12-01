@@ -29,7 +29,6 @@ export const getReservationsList = async (
         cache: "force-cache",
         next: { tags: ["reservations"] },
     });
-
     if ("status" in response) {
         throw new Error(`API returned error with status ${response.status}`);
     }

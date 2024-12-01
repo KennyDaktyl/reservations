@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { decodeAccessToken } from "./lib";
 
+
 export const getAccessToken = (): string | null => {
     if (typeof window === "undefined") {
         const cookieStore = cookies();
@@ -26,3 +27,4 @@ export const getAccessToken = (): string | null => {
         return decodeAccessToken(sessionToken);
     }
 };
+

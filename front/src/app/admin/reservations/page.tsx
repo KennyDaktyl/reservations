@@ -16,5 +16,10 @@ export default async function ReservationsPage() {
         })),
     ];
 
-    return <ReservationsPageClient initialReservations={initialReservations} rooms={rooms} />;
+    return (
+        <ReservationsPageClient
+            initialReservations={initialReservations}
+            rooms={rooms}
+        />
+    );
 }

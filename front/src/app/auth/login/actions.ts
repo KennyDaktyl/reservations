@@ -6,11 +6,10 @@ import { LoginSchema } from "@/app/schemas";
 
 interface LoginResponse {
   access_token: string;
-  role: string;
+  role: "guest" | "user" | "admin";
 }
 
 export const login = async (values: z.infer<typeof LoginSchema>) => {
-  console.log("Rozpoczęcie logowania:", values);
 
   const validatedFields = LoginSchema.safeParse(values);
   if (!validatedFields.success) {

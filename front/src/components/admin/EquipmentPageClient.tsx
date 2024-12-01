@@ -6,6 +6,8 @@ import { useState } from "react";
 import EquipmentList from "./EquipmentList";
 import EquipmentModal from "./EquipmentModal";
 import { useRouter } from "next/navigation";
+import { useSessionStore } from "@/store";
+import { toast } from "react-toastify";
 
 interface EquipmentsPageClientProps {
     equipments: Equipment[];
@@ -15,6 +17,11 @@ const RoomsPageClient = ({ equipments }: EquipmentsPageClientProps) => {
     const [equipmentList, setEquipmentList] = useState<Equipment[]>(equipments);
     const router = useRouter();
 
+    const role = useSessionStore((state) => state.role);
+    if (role !== "admin") {
+        toast.error("Brak dostępu");
+        router.push("/auth/login");
+    }
     const handleCreateEquipment = async (data: { name: string }) => {
         const transformedData = { ...data };
 
@@ -22,7 +29,6 @@ const RoomsPageClient = ({ equipments }: EquipmentsPageClientProps) => {
 
         if (!result.success) {
             console.error("Failed to create equipment:", result.error);
-            console.log(result.status === 401)
             if (result.status === 401) {
                 
                 return;

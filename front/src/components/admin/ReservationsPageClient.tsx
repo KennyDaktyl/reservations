@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Reservation } from "@/app/types";
 import { useForm, Controller } from "react-hook-form";
 import { Label } from "@/components/ui/label";
@@ -9,8 +9,13 @@ import { Input } from "@/components/ui/input";
 import Select from "react-select";
 import { Switch } from "@/components/ui/switch";
 import { fetchReservationsAction } from "@/app/admin/reservations/actions";
-import { toast } from "react-toastify";
 import ReservationList from "../reservations/ReservationList";
+import { handleRemoveReservationAction } from "@/app/reservations/actions";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
+import ReservationsCalendar from "../reservations/ReservationsCalendar";
+import { useSessionStore } from "@/store";
+import ReservationFilterForm from "../reservations/ReservationFilterForm";
+import router, { useRouter } from 'next/navigation';
 
 interface FilterFormValues {
     date_start?: string;
@@ -32,7 +37,13 @@ const ReservationsPageClient = ({
     rooms: Option[];
 }) => {
     const [reservations, setReservations] = useState<Reservation[]>(initialReservations);
-    const { handleSubmit, control } = useForm<FilterFormValues>({
+    const router = useRouter();
+    const role = useSessionStore((state) => state.role);
+    if (role !== "admin") {
+        return <p>Brak dostępu do panelu administracyjnego.</p>;
+    }
+    
+    const { handleSubmit, control, reset } = useForm<FilterFormValues>({
         defaultValues: {
             date_start: "",
             date_end: "",
@@ -49,115 +60,49 @@ const ReservationsPageClient = ({
             console.error("Error during search:", error);
         }
     };
-    
-    
-    const handleError = (errors: any) => {
-        console.error("Validation errors:", errors);
+
+    const handleResetFilters = async () => {
+        try {
+            reset(); 
+            const allReservations = await fetchReservationsAction({});
+            setReservations(allReservations);
+        } catch (error) {
+            console.error("Error resetting filters:", error);
+        }
     };
-    
+
+    const handleDeleteReservation = async (reservationId: number) => {
+        try {
+            await handleRemoveReservationAction({ reservationId });
+            setReservations((prevReservations) =>
+                prevReservations.map((reservation) =>
+                    reservation.id === reservationId
+                        ? { ...reservation, is_active: false }
+                        : reservation
+                )
+            );
+        } catch (error) {
+            console.error("Error deleting reservation:", error);
+            alert("Nie udało się usunąć rezerwacji. Spróbuj ponownie.");
+        }
+    };
 
     return (
         <div className="space-y-6 mt-4">
-            <form
-                onSubmit={handleSubmit(handleSearch, handleError)}
-                noValidate
-                className="flex flex-wrap items-center gap-4 bg-gray-50 p-4 rounded-lg shadow-md h-auto"
-            >
-                <div className="flex flex-col w-1/4">
-                    <Label htmlFor="date_start" className="text-sm font-medium text-gray-700">
-                        Data i godzina początkowa
-                    </Label>
-                    <Controller
-                        name="date_start"
-                        control={control}
-                        render={({ field, fieldState }) => (
-                            <>
-                                <Input
-                                    {...field}
-                                    type="datetime-local"
-                                    id="date_start"
-                                    placeholder="Wybierz datę i godzinę"
-                                    className="border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                                />
-                                {fieldState.error && (
-                                    <span className="text-red-600 text-sm">
-                                        {fieldState.error.message}
-                                    </span>
-                                )}
-                            </>
-                        )}
-                    />
-                </div>
-                <div className="flex flex-col w-1/4">
-                    <Label htmlFor="date_end" className="text-sm font-medium text-gray-700">
-                        Data i godzina końcowa
-                    </Label>
-                    <Controller
-                        name="date_end"
-                        control={control}
-                        render={({ field, fieldState }) => (
-                            <>
-                                <Input
-                                    {...field}
-                                    type="datetime-local"
-                                    id="date_end"
-                                    placeholder="Wybierz datę i godzinę"
-                                    className="border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                                />
-                                {fieldState.error && (
-                                    <span className="text-red-600 text-sm">
-                                        {fieldState.error.message}
-                                    </span>
-                                )}
-                            </>
-                        )}
-                    />
-                </div>
-                <div className="flex flex-col w-1/4">
-                    <Label htmlFor="room_id" className="text-sm font-medium text-gray-700">
-                        Pokój
-                    </Label>
-                    <Controller
-                        name="room_id"
-                        control={control}
-                        render={({ field, fieldState }) => (
-                            <Select<Option>
-                                {...field}
-                                options={rooms}
-                                isSearchable
-                                className="react-select-container"
-                                classNamePrefix="react-select"
-                                value={rooms.find((room) => room.value === field.value) || null}
-                                onChange={(selected) => field.onChange(selected ? selected.value : undefined)}
-                            />
-                        )}
-                    />
-                </div>
-                <div className="flex items-center space-x-2">
-                    <Controller
-                        name="is_active"
-                        control={control}
-                        render={({ field }) => (
-                            <>
-                                <Switch
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                    id="is_active"
-                                    className="bg-blue-600 data-[state=unchecked]:bg-gray-300"
-                                />
-                                <Label htmlFor="is_active" className="text-sm font-medium text-gray-700">
-                                    Aktywne
-                                </Label>
-                            </>
-                        )}
-                    />
-                </div>
-                <Button type="submit" className="px-6 py-2 rounded-md">
-                    Szukaj
-                </Button>
-            </form>
-
-            <ReservationList reservations={reservations} />
+            <ReservationFilterForm rooms={rooms} reservations={reservations} onSearch={handleSearch} onReset={handleResetFilters} />
+            <Tabs defaultValue="list" className="space-y-4">
+                <TabsList className="flex justify-center">
+                    <TabsTrigger value="calendar">Kalendarz</TabsTrigger>
+                    <TabsTrigger value="list">Rezerwacje</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="calendar">
+                    <ReservationsCalendar reservations={reservations} />
+                </TabsContent>
+                <TabsContent value="list">
+                    <ReservationList reservations={reservations} onDelete={handleDeleteReservation}/>
+                </TabsContent>
+            </Tabs>
         </div>
     );
 };

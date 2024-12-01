@@ -18,6 +18,9 @@ export default async function ReservationsPage() {
     const userReservationsResponse = await getReservationsList({"user_id": user.id });
     const reservations = userReservationsResponse as Reservation[];    
 
+    const allReservationsResponse = await getReservationsList({"is_active": true});
+    const allReservations = allReservationsResponse as Reservation[];
+    
     const rooms = roomsResponse as Room[];
     const roomOptions = rooms.map((room) => ({
         value: room.id,
@@ -41,7 +44,7 @@ export default async function ReservationsPage() {
                 </TabsList>
                 
                 <TabsContent value="calendar">
-                    <ReservationsCalendar reservations={reservations} />
+                    <ReservationsCalendar reservations={allReservations} />
                 </TabsContent>
                 <TabsContent value="list">
                     <ReservationList reservations={reservations} />

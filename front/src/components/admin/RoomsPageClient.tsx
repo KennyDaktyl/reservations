@@ -13,6 +13,9 @@ import {
 } from "@/app/admin/rooms/actions";
 import DroppableRoom from "./DroppableRoom";
 import DraggableEquipment from "./DraggableEquipment";
+import { useSessionStore } from "@/store";
+import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 
 interface RoomsPageClientProps {
     rooms: Room[];
@@ -21,6 +24,13 @@ interface RoomsPageClientProps {
 
 const RoomsPageClient = ({ rooms, equipments }: RoomsPageClientProps) => {
     const [roomList, setRoomList] = useState<Room[]>(rooms);
+    
+    const router = useRouter();
+    const role = useSessionStore((state) => state.role);
+    if (role !== "admin") {
+        toast.error("Brak dostępu");
+        router.push("/auth/login");
+    }
     
     const handleCreateRoom = async (data: { name: string; capacity: number; equipments?: { value: number }[] }) => {
         try {
@@ -54,13 +64,9 @@ const RoomsPageClient = ({ rooms, equipments }: RoomsPageClientProps) => {
 
     const handleRemoveEquipmentFromRoom = async (roomId: number, equipmentId: number) => {
         try {
-            console.log(`Clicked to remove equipment ID: ${equipmentId}`);
-            console.log(`Removing equipment (ID: ${equipmentId}) from room (ID: ${roomId})`);
-    
             const response = await handleRemoveEquipmentFromRoomAction({ roomId, equipmentId });
     
             if (response === null) {
-                console.log("Equipment successfully removed from room in API");
     
                 setRoomList((prevRooms) =>
                     prevRooms.map((room) => {
@@ -74,7 +80,6 @@ const RoomsPageClient = ({ rooms, equipments }: RoomsPageClientProps) => {
                     })
                 );
     
-                console.log("Updated room list after equipment removal:", roomList);
             } else {
                 console.error("Unexpected response when removing equipment:", response);
             }

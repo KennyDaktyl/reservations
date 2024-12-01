@@ -10,6 +10,19 @@ interface ReservationsCalendarProps {
     reservations: Reservation[];
 }
 
+const generateColor = (id: number): string => {
+    const colors = [
+        "#f56565", // Red
+        "#ed8936", // Orange
+        "#ecc94b", // Yellow
+        "#48bb78", // Green
+        "#4299e1", // Blue
+        "#9f7aea", // Purple
+        "#ed64a6", // Pink
+    ];
+    return colors[id % colors.length];
+};
+
 const ReservationsCalendar = ({ reservations }: ReservationsCalendarProps) => {
     const activeReservations = reservations.filter(
         (reservation) => reservation.is_active && reservation.room_data
@@ -20,8 +33,8 @@ const ReservationsCalendar = ({ reservations }: ReservationsCalendarProps) => {
         title: `${reservation.room_data?.name} (${reservation.user_data?.email || "Brak użytkownika"})`,
         start: reservation.start_date,
         end: reservation.end_date,
-        color: "#2b6cb0", 
-        textColor: "#ffffff", 
+        color: generateColor(reservation.room_id), 
+        textColor: "#ffffff",
     }));
 
     return (

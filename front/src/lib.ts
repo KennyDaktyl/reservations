@@ -36,7 +36,6 @@ export function verifyJWT(token: string): jwt.JwtPayload | null {
 export async function decryptAccessToken(accessToken: string) {
     try {
         const { payload } = await jwtVerify(accessToken, key, { algorithms: ["HS256"] });
-        console.log("Decoded AccessToken Payload:", payload);
         return payload;
     } catch (error) {
         console.error("Failed to decode AccessToken:", error);
@@ -66,29 +65,24 @@ export async function getUserRoleFromToken(): Promise<"guest" | "user" | "admin"
         const sessionToken = cookies().get("authjs.session-token")?.value;
 
         if (!sessionToken) {
-            console.log("Brak tokena w ciasteczku");
             return "guest";
         }
 
         const decodedSession = decodeToken(sessionToken);
 
         if (!decodedSession) {
-            console.log("Nie udało się zdekodować session-token");
             return "guest";
         }
 
         const accessToken = decodedSession.accessToken;
 
         if (!accessToken) {
-            console.log("Brak accessToken w zdekodowanej sesji");
             return "guest";
         }
 
         const decodedAccessToken = decodeToken(accessToken);
-        console.log("Decoded AccessToken:", decodedAccessToken);
 
         if (!decodedAccessToken || !decodedAccessToken.role) {
-            console.log("Nie udało się zdekodować accessToken lub brak roli");
             return "guest";
         }
 

@@ -33,8 +33,6 @@ export default function NavBar() {
         } else if (status === "unauthenticated") {
             setRole("guest");
         }
-		console.log("Role:", role);
-		console.log("Session:", session);
     }, [session, status]);
 
     const handleLogout = async () => {
