@@ -4,11 +4,12 @@ WORKDIR /app
 
 COPY package.json package-lock.json ./
 
-RUN npm install
+RUN npm install --production
 
 COPY . .
 
 RUN npm run build
 
-EXPOSE 3000
+EXPOSE 3050
+
 CMD ["npm", "start"]
