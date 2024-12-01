@@ -1,10 +1,14 @@
 from datetime import datetime
 
 from flask import Blueprint, request
+from flask import send_file
 from flask_jwt_extended import jwt_required
-from flask_restx import Api, Namespace, Resource, fields
+from flask_restx import Api, Resource, fields
 from marshmallow import ValidationError
 
+from openpyxl import Workbook
+
+from io import BytesIO
 from app.repositories.reservation_repository import ReservationRepository
 from app.schemas.reservation_schema import (ReservationRespnoseSchema,
                                             ReservationSchema)
@@ -29,9 +33,6 @@ api = Api(
     security=[{"Bearer": []}],
 )
 
-reservation_ns = Namespace("", description="Manage reservations")
-api.add_namespace(reservation_ns)
-
 reservation_model = api.model(
     "Reservation",
     {
@@ -49,11 +50,10 @@ reservation_model = api.model(
 )
 
 
-@reservation_ns.route("/list_reservations", methods=["GET"])
+@api.route("/list_reservations", methods=["GET"])
 class ReservationList(Resource):
 
     @jwt_required()
-    @reservation_ns.doc("list_reservations")
     def get(self):
         is_active = request.args.get("is_active")
         sort_by = request.args.get("sort_by")
@@ -81,11 +81,11 @@ class ReservationList(Resource):
 
 
 
-@reservation_ns.route("/create_reservation", methods=["POST"])
+@api.route("/create_reservation", methods=["POST"])
 class ReservationCreate(Resource):
 
-    @reservation_ns.doc("create_reservation")
-    @reservation_ns.expect(reservation_model)
+    @api.doc("create_reservation")
+    @api.expect(reservation_model)
     @jwt_required()
     def post(self):
         try:
@@ -165,11 +165,14 @@ class ReservationCreate(Resource):
         return schema.dump(reservation)
 
 
-@reservation_ns.route("/<int:id>", methods=["GET"])
+@api.route("/<int:id>", methods=["GET", "DELETE"])
 class ReservationDetail(Resource):
 
+    def dispatch_request(self, *args, **kwargs):
+        print(f"Handling method: {request.method}")
+        return super().dispatch_request(*args, **kwargs)
+    
     @admin_required
-    @reservation_ns.doc("get_reservation")
     def get(self, id):
         reservation = ReservationRepository.get_by_id(id)
         if not reservation:
@@ -179,15 +182,13 @@ class ReservationDetail(Resource):
         return schema.dump(reservation), 200
 
     @jwt_required()
-    @admin_required
-    @reservation_ns.doc("delete_reservation")
     def delete(self, id):
         if not ReservationRepository.cancel(id):
             return {"message": "Reservation not found"}, 404
         
-        reservation = ReservationRepository.get_by_id(id)
+        reservation = ReservationRepository.cancel(id)
         notify_reservation_update("cancel", {"id": reservation.id, "room_id": reservation.room_id, "user_id": reservation.user_id, "user_data": reservation.user_data, "room_data": reservation.room_data, "room_data": reservation.room_data})
-        return {"message": "Reservation deleted"}, 200
+        return {"message": "Reservation canceled"}, 200
 
 
 reservation_date_range_model = api.model(
@@ -205,12 +206,12 @@ reservation_date_range_model = api.model(
 )
 
 
-@reservation_ns.route("/date_range", methods=["GET"])
+@api.route("/date_range", methods=["GET"])
 class ReservationDateRange(Resource):
 
     @jwt_required()
-    @reservation_ns.doc("get_reservations_by_date_range")
-    @reservation_ns.expect(reservation_date_range_model)
+    @api.doc("get_reservations_by_date_range")
+    @api.expect(reservation_date_range_model)
     def get(self):
         try:
             start_date = request.args.get("start_date")
@@ -241,3 +242,59 @@ class ReservationDateRange(Resource):
 
         except Exception as e:
             return {"message": "Error retrieving reservations: " + str(e)}, 500
+
+
+@api.route("/export_reservations", methods=["POST"])
+class ExportReservations(Resource):
+    def post(self):
+        try:
+            filters = request.json or {}
+            is_active = filters.get("is_active")
+            user_id = filters.get("user_id")
+            room_id = filters.get("room_id")
+            date_start = filters.get("date_start")
+            date_end = filters.get("date_end")
+
+            if is_active is not None:
+                is_active = str(is_active).lower() == "true"
+
+            reservations = ReservationRepository.get_filtered(
+                is_active=is_active,
+                user_id=user_id,
+                room_id=room_id,
+                date_start=date_start,
+                date_end=date_end,
+            )
+
+            wb = Workbook()
+            ws = wb.active
+            ws.title = "Rezerwacje"
+
+            headers = ["ID", "Pokój", "Użytkownik", "Data rozpoczęcia", "Data zakończenia", "Status"]
+            ws.append(headers)
+
+            for reservation in reservations:
+                ws.append([
+                    reservation.id,
+                    reservation.room_data.get("name") if reservation.room_data else "Brak",
+                    reservation.user_data.get("email") if reservation.user_data else "Brak",
+                    reservation.start_date.strftime("%Y-%m-%d %H:%M:%S"),
+                    reservation.end_date.strftime("%Y-%m-%d %H:%M:%S"),
+                    "Aktywna" if not reservation.cancel_date else "Anulowana"
+                ])
+
+            file_stream = BytesIO()
+            wb.save(file_stream)
+            file_stream.seek(0)
+
+            filename = f"rezerwacje-{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.xlsx"
+            return send_file(
+                file_stream,
+                as_attachment=True,
+                download_name=filename,
+                mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+
+        except Exception as e:
+            return {"message": f"Error exporting reservations: {str(e)}"}, 500
+        

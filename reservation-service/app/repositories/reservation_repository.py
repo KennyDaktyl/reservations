@@ -7,7 +7,6 @@ from app.models.reservation import Reservation
 
 
 class ReservationRepository:
-
     @staticmethod
     def get_filtered(
         is_active=None, sort_by=None, sort_order="asc", user_id=None, room_id=None, date_start=None, date_end=None
@@ -26,10 +25,15 @@ class ReservationRepository:
         if room_id is not None:
             query = query.filter(Reservation.room_id == room_id)
 
-        if date_start:
-            query = query.filter(Reservation.start_date >= date_start)
-        if date_end:
-            query = query.filter(Reservation.end_date <= date_end)
+        if date_start and date_end:
+            query = query.filter(
+                Reservation.start_date <= date_end,
+                Reservation.end_date >= date_start
+            )
+        elif date_start:
+            query = query.filter(Reservation.end_date >= date_start)
+        elif date_end:
+            query = query.filter(Reservation.start_date <= date_end)
 
         if sort_by:
             sort_column = getattr(Reservation, sort_by, None)
@@ -40,6 +44,7 @@ class ReservationRepository:
                     query = query.order_by(asc(sort_column))
 
         return query.all()
+
 
 
     @staticmethod
