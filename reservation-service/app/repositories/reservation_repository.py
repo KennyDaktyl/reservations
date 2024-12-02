@@ -58,6 +58,7 @@ class ReservationRepository:
                 Reservation.room_id == room_id,
                 (Reservation.start_date < end_date)
                 & (Reservation.end_date > start_date),
+                Reservation.cancel_date.is_(None),
             )
             .all()
         )
@@ -135,6 +136,7 @@ class ReservationRepository:
             Reservation.room_id == room_id,
             Reservation.start_date < end_date,
             Reservation.end_date > start_date,
+            Reservation.cancel_date.is_(None),
         ).all()
 
     @staticmethod
@@ -156,7 +158,8 @@ class ReservationRepository:
             db.session.query(Reservation)
             .filter(
                 (Reservation.start_date <= end_date)
-                & (Reservation.end_date >= start_date)
+                & (Reservation.end_date >= start_date),
+                Reservation.cancel_date.is_(None),
             )
             .order_by(sort_field)
             .all()

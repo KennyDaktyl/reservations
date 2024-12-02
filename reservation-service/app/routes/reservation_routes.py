@@ -89,28 +89,49 @@ class ReservationCreate(Resource):
             room_data = request.json.get("room_data")
 
             if not user_data or not room_data:
-                return {"message": "user_data and room_data are required."}, 400
+                return {
+                    "success": False,
+                    "error": {"message": "user_data and room_data are required."}
+                }, 400
 
             validated_data = self._validate_reservation_data(request.json)
             self._validate_dates(validated_data)
 
-            if not self._is_room_available(validated_data)["available"]:
-                conflicts = self._is_room_available(validated_data)["conflicts"]
+            availability = self._is_room_available(validated_data)
+            
+            if not availability["available"]:
+                conflicts = availability["conflicts"]
                 return {
-                    "message": "Pokój jest już zarezerwowany w podanym terminie.",
-                    "details": conflicts,
-                }, 400
+                    "success": False,
+                    "error": {
+                        "room_id": f"Room {room_data['name']} is not available from {validated_data['start_date']} to {validated_data['end_date']}.",
+                        "conflicts": conflicts
+                    }
+                }, 200
 
             reservation = self._create_reservation(validated_data)
             self._send_reservation_notification(reservation)
-            return self._serialize_reservation(reservation), 201
+            return {
+                "success": True,
+                "data": self._serialize_reservation(reservation)
+            }, 201
 
         except ValidationError as err:
-            return {"errors": err.messages}, 400
+            return {
+                "success": False,
+                "error": {"message": err.messages}
+            }, 200
         except ValueError as err:
-            return {"message": str(err)}, 400
+            return {
+                "success": False,
+                "error": {"message": str(err)}
+            }, 400
         except Exception as e:
-            return {"message": f"Error creating reservation: {str(e)}"}, 500
+            return {
+                "success": False,
+                "error": {"message": f"Error creating reservation: {str(e)}"}
+            }, 500
+
 
     def _validate_reservation_data(self, data):
         schema = ReservationSchema()
