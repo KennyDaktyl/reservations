@@ -26,3 +26,14 @@ class TestingConfig(Config):
     """Testing configuration."""
 
     SQLALCHEMY_DATABASE_URI = "sqlite:///test.db"
+
+
+class ProductionConfig(Config):
+    """Production configuration"""
+
+    SQLALCHEMY_DATABASE_URI = os.getenv(
+        "DATABASE_URL",
+        "postgresql://postgres_user:postgres_pass@postgres-service:5433/room_db",
+    )  # type: ignore
+    DEBUG = False
+    TESTING = False

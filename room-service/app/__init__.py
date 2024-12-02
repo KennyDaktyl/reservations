@@ -10,7 +10,7 @@ from flask_marshmallow import Marshmallow
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 
-from app.config import DevelopmentConfig
+from app.config import DevelopmentConfig, ProductionConfig, TestingConfig
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -21,8 +21,15 @@ ma = Marshmallow()
 def create_app(config_type="development"):
     app = Flask(__name__)
 
-    if config_type == "development":
+    if config_type is None:
+        config_type = os.getenv('FLASK_ENV', 'development')
+        
+    if config_type == "testing":
+        app.config.from_object(TestingConfig)
+    elif config_type == "development":
         app.config.from_object(DevelopmentConfig)
+    elif config_type == "production":
+        app.config.from_object(ProductionConfig)
 
     app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "default_secret_key")
     
