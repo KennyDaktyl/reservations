@@ -62,6 +62,25 @@ export JWT_SECRET_KEY=jwtsecret
 export FLASK_ENV=development
 export PORT=5010
 
+
+### front
+
+**Dla Docker:**
+AUTH_SECRET=jwtsecret
+AUTH_URL=http://localhost:3000
+AUTH_TRUST_HOSTS=http://127.0.0.1:3000
+NEXT_PUBLIC_ROOMS_API_URL=http://flask-room-service:5005
+NEXT_PUBLIC_AUTH_API_URL=http://flask-auth-service:5100/api/auth
+NEXT_PUBLIC_RESERVATION_API_URL=http://flask-reservation-service:5010/api/reservations
+
+**Lokanie**
+AUTH_SECRET=jwtsecret
+AUTH_URL=http://localhost:3000
+AUTH_TRUST_HOSTS=http://127.0.0.1:3000
+NEXT_PUBLIC_ROOMS_API_URL=http://127.0.0.1:5005
+NEXT_PUBLIC_AUTH_API_URL=http://127.0.0.1:5100/api/auth
+NEXT_PUBLIC_RESERVATION_API_URL=http://127.0.0.1:5010/api/reservations
+
 ---
 
 ## Uruchamianie dockerów
@@ -85,6 +104,10 @@ cd ..
 
 4. Reservation-service
 cd reservation-service
+sudo docker-compose up --build -d
+
+5. Front
+cd front
 sudo docker-compose up --build -d
 
 ---
