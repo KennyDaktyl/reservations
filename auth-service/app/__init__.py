@@ -5,7 +5,7 @@ from flask_marshmallow import Marshmallow
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 
-from .config import DevelopmentConfig, TestingConfig
+from app.config import DevelopmentConfig, ProductionConfig, TestingConfig
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -21,8 +21,10 @@ def create_app(config_type=None):
         
     if config_type == "testing":
         app.config.from_object(TestingConfig)
-    else:
+    elif config_type == "development":
         app.config.from_object(DevelopmentConfig)
+    elif config_type == "production":
+        app.config.from_object(ProductionConfig)
 
     db.init_app(app)
     migrate.init_app(app, db)

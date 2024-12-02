@@ -2,17 +2,16 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-COPY . .
+COPY . /app
+COPY migrations /app/migrations
 
 RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install python-dotenv
 
-COPY .env .env
-
-ENV FLASK_APP=run.py
+ENV FLASK_APP=app.run:create_app
 ENV FLASK_RUN_HOST=0.0.0.0
-ENV FLASK_ENV=development
+ENV FLASK_ENV=production
 
-EXPOSE 5000
+EXPOSE 5100
 
-CMD ["sh", "-c", "flask run --host=0.0.0.0 --port=5000"]
+CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5100", "app.run:app", "--chdir", "/app"]
+
