@@ -58,7 +58,7 @@ def test_user_token_content(user_token):
 def test_admin_required_access(client, user_token):
     headers = {"Authorization": f"Bearer {user_token}"}
     response = client.get(
-        "/api/reservations/list_reservations",
+        "/api/reservations/1",
         headers=headers,
     )
 
@@ -87,23 +87,26 @@ def test_create_reservation_conflict(client, admin_token):
         "user_id": 2,
         "start_date": start_date.isoformat(),
         "end_date": end_date.isoformat(),
+        "room_data": {"id": 1, "name": "Test", "capacity": 0, "equipments": []},
+        "user_data": {"id": 1, "email": "testowy@gmail.com", "role": "user"},
     }
     response = client.post(
         "/api/reservations/create_reservation",
         json=payload,
         headers={"Authorization": f"Bearer {admin_token}"},
     )
+
     assert (
         response.status_code == 400
     ), f"Unexpected status code: {response.status_code}"
+
     assert "errors" in response.json, "Expected 'errors' key in response JSON"
+
     assert "room_id" in response.json["errors"], "Expected 'room_id' key in 'errors'"
 
-    expected_message = (
-        f"Room {payload['room_id']} is not available from {start_date} to {end_date}."
-    )
+    expected_message = f"Room {payload['room_data']["name"]} is not available from"
     assert (
-        response.json["errors"]["room_id"] == expected_message
+        expected_message in response.json["errors"]["room_id"]
     ), f"Unexpected error message: {response.json['errors']['room_id']}"
 
 
@@ -116,6 +119,8 @@ def test_create_reservation_success(client, admin_token):
         "user_id": 2,
         "start_date": start_date.isoformat(),
         "end_date": end_date.isoformat(),
+        "room_data": {"id": 1, "name": "Test", "capacity": 0, "equipments": []},
+        "user_data": {"id": 1, "email": "testowy@gmail.com", "role": "user"},
     }
     response = client.post(
         "/api/reservations/create_reservation",

@@ -39,4 +39,3 @@ class ProductionConfig(Config):
         "DATABASE_URL",
         "postgresql://postgres_user:postgres_pass@postgres-service:5433/prod_reservation_db",
     )
-    

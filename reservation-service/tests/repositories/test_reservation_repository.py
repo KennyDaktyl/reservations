@@ -12,13 +12,14 @@ def test_check_room_availability(app):
         db.session.add(reservation)
         db.session.commit()
 
-        is_available = ReservationRepository.check_room_availability(
-            room_id=reservation.room_id,
-            start_date=reservation.start_date,
-            end_date=reservation.end_date,
+        availability = ReservationRepository.check_room_availability(
+            reservation.room_id,
+            reservation.start_date,
+            reservation.end_date,
         )
 
-        assert not is_available
+        assert availability["available"] is False
+        assert len(availability["conflicts"]) > 0
 
 
 def test_create_reservation(app):
@@ -47,8 +48,9 @@ def test_create_reservation(app):
             reservation_data.end_date,
         )
 
-        if is_available:
+        if is_available["available"]:
             reservation = ReservationRepository.create(reservation_data_dict)
+
             assert reservation.id is not None
             assert reservation.room_id == reservation_data_dict["room_id"]
             assert reservation.user_id == reservation_data_dict["user_id"]

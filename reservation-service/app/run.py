@@ -1,9 +1,10 @@
 import os
+
 from app import create_app, socketio
 
-config_type = os.getenv("FLASK_ENV", "development")  
-port = int(os.getenv("PORT", 5010))  
-debug = config_type == "development" 
+config_type = os.getenv("FLASK_ENV", "development")
+port = int(os.getenv("PORT", 5010))
+debug = config_type == "development"
 
 app = create_app(config_type=config_type)
 

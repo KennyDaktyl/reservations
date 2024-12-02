@@ -1,20 +1,17 @@
 from datetime import datetime
+from io import BytesIO
 
-from flask import Blueprint, request
-from flask import send_file
+from flask import Blueprint, request, send_file
 from flask_jwt_extended import jwt_required
 from flask_restx import Api, Resource, fields
 from marshmallow import ValidationError
-
 from openpyxl import Workbook
 
-from io import BytesIO
 from app.repositories.reservation_repository import ReservationRepository
 from app.schemas.reservation_schema import (ReservationRespnoseSchema,
                                             ReservationSchema)
-from app.utils.admin_required_decorator import admin_required
 from app.sockets import notify_reservation_update
-
+from app.utils.admin_required_decorator import admin_required
 
 reservation_bp = Blueprint("reservations", __name__)
 api = Api(
@@ -60,8 +57,8 @@ class ReservationList(Resource):
         sort_order = request.args.get("sort_order", "asc")
         user_id = request.args.get("user_id", type=int)
         room_id = request.args.get("room_id", type=int)
-        date_start = request.args.get("date_start") 
-        date_end = request.args.get("date_end")   
+        date_start = request.args.get("date_start")
+        date_end = request.args.get("date_end")
 
         if is_active is not None:
             is_active = is_active.lower() == "true"
@@ -78,7 +75,6 @@ class ReservationList(Resource):
 
         schema = ReservationRespnoseSchema(many=True)
         return schema.dump(reservations), 200
-
 
 
 @api.route("/create_reservation", methods=["POST"])
@@ -104,7 +100,6 @@ class ReservationCreate(Resource):
                     "message": "Pokój jest już zarezerwowany w podanym terminie.",
                     "details": conflicts,
                 }, 400
-
 
             reservation = self._create_reservation(validated_data)
             self._send_reservation_notification(reservation)
@@ -133,7 +128,9 @@ class ReservationCreate(Resource):
             try:
                 return datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S")
             except ValueError:
-                raise ValueError(f"Invalid {field_name} format. Use YYYY-MM-DDTHH:MM:SS")
+                raise ValueError(
+                    f"Invalid {field_name} format. Use YYYY-MM-DDTHH:MM:SS"
+                )
 
     def _is_room_available(self, data):
         availability = ReservationRepository.check_room_availability(
@@ -143,7 +140,9 @@ class ReservationCreate(Resource):
 
     def _room_unavailable_response(self, data):
         room_name = data["room"]["name"]
-        return {"message": f"Room {room_name} is already reserved in the specified date range."}, 400
+        return {
+            "message": f"Room {room_name} is already reserved in the specified date range."
+        }, 400
 
     def _create_reservation(self, data):
         return ReservationRepository.create(data)
@@ -157,7 +156,7 @@ class ReservationCreate(Resource):
                 "user_id": reservation.user_id,
                 "user_data": reservation.user_data,
                 "room_data": reservation.room_data,
-            }
+            },
         )
 
     def _serialize_reservation(self, reservation):
@@ -171,7 +170,7 @@ class ReservationDetail(Resource):
     def dispatch_request(self, *args, **kwargs):
         print(f"Handling method: {request.method}")
         return super().dispatch_request(*args, **kwargs)
-    
+
     @admin_required
     def get(self, id):
         reservation = ReservationRepository.get_by_id(id)
@@ -185,9 +184,19 @@ class ReservationDetail(Resource):
     def delete(self, id):
         if not ReservationRepository.cancel(id):
             return {"message": "Reservation not found"}, 404
-        
+
         reservation = ReservationRepository.cancel(id)
-        notify_reservation_update("cancel", {"id": reservation.id, "room_id": reservation.room_id, "user_id": reservation.user_id, "user_data": reservation.user_data, "room_data": reservation.room_data, "room_data": reservation.room_data})
+        notify_reservation_update(
+            "cancel",
+            {
+                "id": reservation.id,
+                "room_id": reservation.room_id,
+                "user_id": reservation.user_id,
+                "user_data": reservation.user_data,
+                "room_data": reservation.room_data,
+                "room_data": reservation.room_data,
+            },
+        )
         return {"message": "Reservation canceled"}, 200
 
 
@@ -270,18 +279,35 @@ class ExportReservations(Resource):
             ws = wb.active
             ws.title = "Rezerwacje"
 
-            headers = ["ID", "Pokój", "Użytkownik", "Data rozpoczęcia", "Data zakończenia", "Status"]
+            headers = [
+                "ID",
+                "Pokój",
+                "Użytkownik",
+                "Data rozpoczęcia",
+                "Data zakończenia",
+                "Status",
+            ]
             ws.append(headers)
 
             for reservation in reservations:
-                ws.append([
-                    reservation.id,
-                    reservation.room_data.get("name") if reservation.room_data else "Brak",
-                    reservation.user_data.get("email") if reservation.user_data else "Brak",
-                    reservation.start_date.strftime("%Y-%m-%d %H:%M:%S"),
-                    reservation.end_date.strftime("%Y-%m-%d %H:%M:%S"),
-                    "Aktywna" if not reservation.cancel_date else "Anulowana"
-                ])
+                ws.append(
+                    [
+                        reservation.id,
+                        (
+                            reservation.room_data.get("name")
+                            if reservation.room_data
+                            else "Brak"
+                        ),
+                        (
+                            reservation.user_data.get("email")
+                            if reservation.user_data
+                            else "Brak"
+                        ),
+                        reservation.start_date.strftime("%Y-%m-%d %H:%M:%S"),
+                        reservation.end_date.strftime("%Y-%m-%d %H:%M:%S"),
+                        "Aktywna" if not reservation.cancel_date else "Anulowana",
+                    ]
+                )
 
             file_stream = BytesIO()
             wb.save(file_stream)
@@ -292,9 +318,8 @@ class ExportReservations(Resource):
                 file_stream,
                 as_attachment=True,
                 download_name=filename,
-                mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             )
 
         except Exception as e:
             return {"message": f"Error exporting reservations: {str(e)}"}, 500
-        

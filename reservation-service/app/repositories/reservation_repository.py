@@ -9,7 +9,13 @@ from app.models.reservation import Reservation
 class ReservationRepository:
     @staticmethod
     def get_filtered(
-        is_active=None, sort_by=None, sort_order="asc", user_id=None, room_id=None, date_start=None, date_end=None
+        is_active=None,
+        sort_by=None,
+        sort_order="asc",
+        user_id=None,
+        room_id=None,
+        date_start=None,
+        date_end=None,
     ):
         query = db.session.query(Reservation)
 
@@ -27,8 +33,7 @@ class ReservationRepository:
 
         if date_start and date_end:
             query = query.filter(
-                Reservation.start_date <= date_end,
-                Reservation.end_date >= date_start
+                Reservation.start_date <= date_end, Reservation.end_date >= date_start
             )
         elif date_start:
             query = query.filter(Reservation.end_date >= date_start)
@@ -45,15 +50,14 @@ class ReservationRepository:
 
         return query.all()
 
-
-
     @staticmethod
     def check_room_availability(room_id, start_date, end_date):
         overlapping_reservations = (
             db.session.query(Reservation)
             .filter(
                 Reservation.room_id == room_id,
-                (Reservation.start_date < end_date) & (Reservation.end_date > start_date),
+                (Reservation.start_date < end_date)
+                & (Reservation.end_date > start_date),
             )
             .all()
         )
@@ -72,7 +76,6 @@ class ReservationRepository:
             }
 
         return {"available": True, "conflicts": []}
-
 
     @staticmethod
     def create(data):

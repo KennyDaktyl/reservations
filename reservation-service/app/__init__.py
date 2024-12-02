@@ -7,10 +7,10 @@ from flask_cors import CORS
 from flask_jwt_extended import JWTManager, verify_jwt_in_request
 from flask_marshmallow import Marshmallow
 from flask_migrate import Migrate
-from flask_sqlalchemy import SQLAlchemy
 from flask_socketio import SocketIO
+from flask_sqlalchemy import SQLAlchemy
 
-from .config import ProductionConfig
+from app.config import ProductionConfig
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -50,7 +50,7 @@ def create_app(config_type=None, database_path=None):
     CORS(app)
 
     socketio.init_app(app, cors_allowed_origins="*")
-    
+
     logging.basicConfig(level=logging.INFO)
 
     @app.before_request
