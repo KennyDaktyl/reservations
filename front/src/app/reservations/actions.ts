@@ -18,8 +18,9 @@ export async function createReservationAction(
         if ("success" in response && response.success === false) {
             return response as CreateReservationErrorResponse;
         }
-        revalidatePath("/admin/rooms");
-        revalidateTag("rooms");
+        revalidatePath("/admin/reservations");
+        revalidateTag("/reservations");
+        revalidateTag("reservations");
         return response as CreateReservationSuccessResponse
     } catch (error: any) {
         return {
@@ -38,6 +39,7 @@ export const handleCreateRoomAction = async (data: { name: string; capacity: num
             throw new Error("Room creation failed");
         }
         revalidatePath("/admin/rooms");
+        revalidatePath("/rooms");
         revalidateTag("rooms");
         return newRoom
     } catch (error) {
@@ -51,6 +53,7 @@ export const handleDeleteRoomAction = async (id: number) => {
     try {
         await deleteRoom(id);
         revalidatePath("/admin/rooms");
+        revalidatePath("/rooms");
         revalidateTag("rooms");
     } catch (error) {
         console.error("Failed to delete room:", error);
@@ -68,6 +71,7 @@ export const handleAddEquipmentToRoomAction = async (data: { roomId: number; equ
             return null;
         }
         revalidatePath("/admin/rooms");
+        revalidatePath("/rooms");
         revalidateTag("rooms");
         return updatedRoom; 
     } catch (error) {

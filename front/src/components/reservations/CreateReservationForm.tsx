@@ -90,11 +90,9 @@ const CreateReservationForm = ({ rooms, user }: ReservationsPageClientProps) => 
                 }
             }
         } catch (error) {
-            console.error("Błąd podczas dodawania rezerwacji:", error);
             toast.error("Wystąpił błąd po stronie serwera. Spróbuj ponownie później.");
         }
     };
-    
 
     return (
         <form
