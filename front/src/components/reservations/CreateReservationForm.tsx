@@ -64,28 +64,36 @@ const CreateReservationForm = ({ rooms, user }: ReservationsPageClientProps) => 
             room_data: selectedRoom.room_data,
         };
     
-        const response = await createReservationAction(payload);
+        try {
+            const response = await createReservationAction(payload);
     
-        if (response.success) {
-            toast.success("Rezerwacja została dodana pomyślnie!");
-            reset();
-        } else if (response.error) {
-            const { message, details } = response.error;
+            if (response.success) {
+                toast.success("Rezerwacja została dodana pomyślnie!");
+                reset();
+            } else {
+                console.error("Błąd podczas tworzenia rezerwacji:", response.error);
     
-            if (message) {
-                toast.error(message);
+                if (typeof response.error?.message === "object") {
+                    Object.values(response.error.message).forEach((msg) => {
+                        toast.error(msg as string);
+                    });
+                } else if (response.error?.message) {
+                    toast.error(response.error.message);
+                }
+    
+                if (response.error?.conflicts?.length) {
+                    response.error.conflicts.forEach((conflict) => {
+                        toast.error(
+                            `Konflikt z rezerwacją: ${conflict.start_date} - ${conflict.end_date}`
+                        );
+                    });
+                }
             }
-    
-            if (details) {
-                Object.entries(details).forEach(([key, detailMessage]) => {
-                    toast.error(detailMessage as string);
-                });
-            }
-        } else {
-            toast.error("Nie udało się utworzyć rezerwacji. Spróbuj ponownie później.");
+        } catch (error) {
+            console.error("Błąd podczas dodawania rezerwacji:", error);
+            toast.error("Wystąpił błąd po stronie serwera. Spróbuj ponownie później.");
         }
     };
-    
     
 
     return (

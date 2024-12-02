@@ -76,3 +76,46 @@ export interface FormValues {
   room_id?: number;
   user_id?: number;
 }
+
+export type ReservationConflict = {
+  id: number;
+  start_date: string;
+  end_date: string;
+};
+
+export type ReservationError = {
+  message?: string | { [key: string]: string };
+  room_id?: string;
+  conflicts?: ReservationConflict[];
+};
+
+export type CreateReservationSuccessResponse = {
+  success: true;
+  data: {
+      id: number;
+      room_id: number;
+      user_id: number;
+      start_date: string;
+      end_date: string;
+      room_data: Room;
+      user_data: UserData;
+  };
+};
+
+export type CreateReservationErrorResponse = {
+  success: false;
+  error: ReservationError;
+};
+
+export type CreateReservationResponse =
+  | CreateReservationSuccessResponse
+  | CreateReservationErrorResponse;
+
+export type CreateReservationData = {
+  room_id: number;
+  user_id: number;
+  start_date: string;
+  end_date: string;
+  user_data: UserData;
+  room_data: Room;
+};

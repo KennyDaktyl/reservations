@@ -65,19 +65,26 @@ const ReservationList = ({ reservations, onDelete }: ReservationListProps) => {
                                 reservation.is_active ? "bg-white" : "bg-gray-100"
                             )}
                         >
-                            <button
-                                className={clsx(
-                                    "absolute top-2 right-2",
-                                    isDeleting === reservation.id
-                                        ? "text-gray-400 cursor-not-allowed"
-                                        : "text-red-500 hover:text-red-700"
-                                )}
-                                aria-label="Usuń rezerwację"
-                                onClick={() => handleDeleteReservation(reservation.id)}
-                                disabled={isDeleting === reservation.id}
-                            >
-                                <Delete size={18} />
-                            </button>
+                            {reservation.is_active && (
+                                <button
+                                    className={clsx(
+                                        "absolute top-2 right-2",
+                                        isDeleting === reservation.id
+                                            ? "text-gray-400 cursor-not-allowed"
+                                            : "text-red-500 hover:text-red-700"
+                                    )}
+                                    aria-label="Usuń rezerwację"
+                                    onClick={() => handleDeleteReservation(reservation.id)}
+                                    disabled={isDeleting === reservation.id}
+                                >
+                                    <Delete size={18} />
+                                </button>
+                            )}
+                            {!reservation.is_active && (
+                                <p className="mt-2 text-red-600 font-bold">
+                                    Ta rezerwacja została anulowana.
+                                </p>
+                            )}
                             <p>
                                 <strong>Pokój:</strong> {reservation.room_data?.name}
                             </p>

@@ -5,40 +5,31 @@ import { createRoom } from "../api/createRoom";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { deleteRoom } from "../api/deleteRoom";
 import { addEquipmentToRoom } from "../api/addEquipmentToRoom";
-import { Room, UserData } from "../types";
+import { CreateReservationData, CreateReservationErrorResponse, CreateReservationResponse, CreateReservationSuccessResponse, Room, UserData } from "../types";
 import { deleteReservation } from "../api/deleteReservation";
 
-interface CreateReservationData {
-    room_id: number;
-    user_id: number;
-    start_date: string;
-    end_date: string;
-    user_data: UserData;
-    room_data: Room;
-}
 
-export async function createReservationAction(data: CreateReservationData) {
+export async function createReservationAction(
+    data: CreateReservationData
+): Promise<CreateReservationResponse> {
     try {
-        const response = await createReservation(data);
-        revalidatePath("/reservations");
-        revalidateTag("reservations");
-        return { success: true, data: response };
-    } catch (error: any) {
+        const response: any = await createReservation(data);
 
-        if (error.status === 400 && error.details) {
-            return {
-                success: false,
-                error: {
-                    message: error.message,
-                    details: error.details,
-                },
-            };
+        if ("success" in response && response.success === false) {
+            return response as CreateReservationErrorResponse;
         }
-
-        return { success: false, error: { message: error.message || "Nie udało się utworzyć rezerwacji." } };
+        revalidatePath("/admin/rooms");
+        revalidateTag("rooms");
+        return response as CreateReservationSuccessResponse
+    } catch (error: any) {
+        return {
+            success: false,
+            error: {
+                message: error.message || "Nie udało się utworzyć rezerwacji.",
+            },
+        };
     }
 }
-
 
 export const handleCreateRoomAction = async (data: { name: string; capacity: number; equipments?: number[] }) => {
     try {
