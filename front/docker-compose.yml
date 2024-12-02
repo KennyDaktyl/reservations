@@ -1,18 +1,19 @@
-version: "3.8"
+version: '3.8'
 
 services:
   nextjs:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: nextjs-container
     ports:
       - "3050:3050"
+    env_file:
+      - .env
     environment:
       NODE_ENV: production
-      PORT: 3050
-    volumes:
-      - .:/app
-      - /app/node_modules
-    command: "npm start"
-    restart: always
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    external: true
