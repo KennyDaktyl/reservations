@@ -12,15 +12,15 @@ docker network create app-network
 
 W każdym z mikroserwisów utwórz plik `.env` (obok folderu `app/`) i wklej odpowiednie wartości:
 
-### auth-service
+### auth-service  
 
-**Dla Docker:**
+**Dla Docker:**   
 SECRET_KEY=supersecretkey
 DATABASE_URL=postgresql://postgres_user:postgres_pass@postgres-service:5432/main_db
 JWT_SECRET_KEY=jwtsecret
 FLASK_ENV=production
 
-**Lokalnie:**
+**Lokalnie:**  
 export SECRET_KEY=supersecretkey
 export DATABASE_URL=postgresql://postgres_user:postgres_pass@127.0.0.1:5433/main_db
 export JWT_SECRET_KEY=jwtsecret
@@ -28,52 +28,52 @@ export FLASK_ENV=development
 
 ---
 
-### room-service
+### room-service  
 
-**Dla Docker:**
+**Dla Docker:**  
 DATABASE_URL=postgresql://postgres_user:postgres_pass@postgres-service:5432/room_db
 SECRET_KEY=supersecretkey
 JWT_SECRET_KEY=jwtsecret
 FLASK_ENV=development
 
-**Lokalnie:**
+**Lokalnie:**  
 export DATABASE_URL=postgresql://postgres_user:postgres_pass@127.0.0.1:5433/room_db
 export SECRET_KEY=supersecretkey
 export JWT_SECRET_KEY=jwtsecret
 export FLASK_ENV=development
-
+  
 ---
 
-### reservation-service
-
-**Dla Docker:**
+### reservation-service  
+  
+**Dla Docker:**  
 SECRET_KEY=supersecretkey
 DATABASE_URL=postgresql://postgres_user:postgres_pass@postgres-service:5432/reservation_db
 JWT_SECRET_KEY=jwtsecret
 FLASK_ENV=production
 PYTHONPATH=/app
-PORT=5010
-
-**Lokalnie:**
+PORT=5010  
+  
+**Lokalnie:**  
 export SECRET_KEY=supersecretkey
 export DATABASE_URL=postgresql://postgres_user:postgres_pass@127.0.0.1:5433/reservation_db
 export TEST_DATABASE_URL="postgresql://postgres_user:postgres_pass@localhost:5433/test_db"
 export JWT_SECRET_KEY=jwtsecret
 export FLASK_ENV=development
 export PORT=5010
+  
 
-
-### front
-
-**Dla Docker:**
+### front  
+  
+**Dla Docker:**  
 AUTH_SECRET=jwtsecret
 AUTH_URL=http://localhost:3000
 AUTH_TRUST_HOSTS=http://127.0.0.1:3000
 NEXT_PUBLIC_ROOMS_API_URL=http://flask-room-service:5005
 NEXT_PUBLIC_AUTH_API_URL=http://flask-auth-service:5100/api/auth
 NEXT_PUBLIC_RESERVATION_API_URL=http://flask-reservation-service:5010/api/reservations
-
-**Lokanie**
+  
+**Lokanie**   
 AUTH_SECRET=jwtsecret
 AUTH_URL=http://localhost:3000
 AUTH_TRUST_HOSTS=http://127.0.0.1:3000
@@ -85,31 +85,31 @@ NEXT_PUBLIC_RESERVATION_API_URL=http://127.0.0.1:5010/api/reservations
 
 ## Uruchamianie dockerów
 
-Uruchom poszczególne mikroserwisy w odpowiedniej kolejności:
+Uruchom poszczególne mikroserwisy w odpowiedniej kolejności:  
 
-1. Postgres
-cd postgres-service
-sudo docker-compose up --build -d
-cd ..
+1. Postgres  
+cd postgres-service  
+sudo docker-compose up --build -d  
+cd ..  
+  
+2. Auth-service  
+cd auth-service  
+sudo docker-compose up --build -d   
+cd ..  
+  
+3. Room-service  
+cd room-service  
+sudo docker-compose up --build -d  
+cd ..  
 
-2. Auth-service
-cd auth-service
-sudo docker-compose up --build -d
-cd ..
-
-3. Room-service
-cd room-service
-sudo docker-compose up --build -d
-cd ..
-
-4. Reservation-service
-cd reservation-service
-sudo docker-compose up --build -d
-
-5. Front
-cd front
-sudo docker-compose up --build -d
-
+4. Reservation-service  
+cd reservation-service  
+sudo docker-compose up --build -d  
+  
+5. Front  
+cd front  
+sudo docker-compose up --build -d  
+  
 ---
 
 ## Uruchamianie lokalnie
